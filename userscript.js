@@ -69,31 +69,35 @@ function connectEventWindow() {
         }
     }
     eventButton.addEventListener("click", (event) => {
-        log("event button clicked!");
         initOptionsInEventWindow();
+        markUnreadEvents();
     });
 }
 
-var eventWindowInit = false;
 function initOptionsInEventWindow() {
-    if (eventWindowInit) return;
     log("init event window!");
     var eventContentElem = $('#eventsContainer .content .overview')[0];
-    console.log("event content elem", eventContentElem);
     if (eventContentElem) {
         addEventFilterSelect(eventContentElem);
     }
+}
 
-
-
-    eventWindowInit = true;
+function markUnreadEvents() {
+    log("mark Unread Events");
+    let childrenOfUl = $('#eventsContainer .content .overview ul').children();
+    //console.log("children of ul", childrenOfUl, unreadEvents);
+    for (var i = 0; i < unreadEvents; i++) {
+        var liElem = childrenOfUl[i];
+        //console.log("li elem", liElem);
+        liElem.style.border = "4px #fff solid";
+    }
 }
 
 function addEventFilterSelect(elem) {
     log("addEventFilterSelect()");
     let wrapper = document.createElement('div');
     wrapper.id = "contract-event-wrapper";
-    wrapper.style.padding = "2rem";
+    wrapper.style.padding = "1rem";
 
     // add a label for type select
     let filterLabel = document.createElement('span');
