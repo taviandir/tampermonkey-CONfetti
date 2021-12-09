@@ -3,7 +3,7 @@
 // @namespace    https://www.conflictnations.com/
 // @version      0.1
 // @description  Improve the CON experience.
-// @author       You
+// @author       Jimmy S
 // @match        https://www.conflictnations.com/*
 // @icon         https://www.google.com/s2/favicons?domain=tampermonkey.net
 // @grant        none
