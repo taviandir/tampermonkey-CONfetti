@@ -9,7 +9,7 @@ This script in no ways alters data, does not intercept data sent to or from the 
 
 # Why
 
-I made this script to fix the issues that frustrated me and added features I thought was lacking.
+I made this script to fix the issues that frustrated me and added functionality I thought was lacking and should already exist.
 
 
 # Features
