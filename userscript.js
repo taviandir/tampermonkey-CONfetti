@@ -138,7 +138,7 @@ function onChangeFilterType(event) {
         var show = true;
         var keywordsToSearchFor;
         if (filter === 'COM') {
-            keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Resources Looted'];
+            keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Resources looted'];
         }
         else if (filter === 'TER') {
             keywordsToSearchFor = ['Province Entered', 'Territory Lost', 'Territory Conquered'];
