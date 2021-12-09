@@ -22,8 +22,8 @@
     node.style.background = "red";
     node.style.color = "white";
     node.style.position = "absolute";
-    node.style.bottom = "10px";
-    node.style.left = "10px";
+    node.style.top = "10px";
+    node.style.left = "330px";
     node.style["font-weight"] = "bold";
     node.style.padding = "1rem";
     node.style.cursor = "pointer";
@@ -89,7 +89,7 @@ function markUnreadEvents() {
     for (var i = 0; i < unreadEvents; i++) {
         var liElem = childrenOfUl[i];
         //console.log("li elem", liElem);
-        liElem.style.border = "4px #fff solid";
+        liElem.style.borderLeft = "4px solid yellow";
     }
 }
 
@@ -108,24 +108,66 @@ function addEventFilterSelect(elem) {
     let filterSelect = document.createElement('select');
     wrapper.appendChild(filterSelect);
     filterSelect.style.padding = "0.5rem";
-    log("addEventFilterSelect() - 1");
     addOptionToParent('All', 'ALL', filterSelect);
+    addOptionToParent('Combat', 'COM', filterSelect);
     addOptionToParent('Territories', 'TER', filterSelect);
     addOptionToParent('Agents', 'AGE', filterSelect);
     addOptionToParent('Research', 'RES', filterSelect);
     addOptionToParent('City Production', 'CIT', filterSelect);
-    log("addEventFilterSelect() - 2");
+    addOptionToParent('Diplomacy', 'DIP', filterSelect);
     filterSelect.addEventListener('change', onChangeFilterType);
     elem.prepend(wrapper);
-
-
-    log("addEventFilterSelect() - DONE");
 }
 
 function onChangeFilterType(event) {
     console.log("filter change!", event);
     var eventElems = $('#eventsContainer .content .overview ul li');
-    console.log("filter change! UL: ", eventElems, event.target.value);
+    var filter = event.target.value;
+
+    for (var i = 0; i < eventElems.length; i++) {
+        var evEl = eventElems[i];
+        var desc = $(evEl).find('.event-description');
+        var content = "";
+        if (desc.length === 1) {
+            content = desc[0].innerText;
+        }
+        else {
+            continue;
+        }
+
+        var show = true;
+        var keywordsToSearchFor;
+        if (filter === 'COM') {
+            keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Resources Looted'];
+        }
+        else if (filter === 'TER') {
+            keywordsToSearchFor = ['Province Entered', 'Territory Lost', 'Territory Conquered'];
+        }
+        else if (filter === 'AGE') {
+            keywordsToSearchFor = ['Agent'];
+        }
+        else if (filter === 'RES') {
+            keywordsToSearchFor = ['Research Completed'];
+        }
+        else if (filter === 'CIT') {
+            keywordsToSearchFor = ['built in', 'mobilized'];
+        }
+        else if (filter === 'DIP') {
+            keywordsToSearchFor = ['New Article Published', 'Message Received', 'Diplomatic Status Changed'];
+        }
+
+        if (keywordsToSearchFor && keywordsToSearchFor.length) {
+            show = keywordsToSearchFor.map(x => content.includes(x)).some(match => match === true);
+        }
+
+        // eval result
+        if (show) {
+            evEl.removeAttribute('hidden');
+        }
+        else {
+            evEl.setAttribute('hidden', '');
+        }
+    }
 }
 
 
