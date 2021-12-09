@@ -2,8 +2,8 @@
 // @name         CONtract
 // @namespace    https://www.conflictnations.com/
 // @version      0.1
-// @description  Improve the CON experience.
-// @author       Jimmy S
+// @description  Improve the CON UI experience.
+// @author       Taviandir
 // @match        https://www.conflictnations.com/*
 // @icon         https://www.google.com/s2/favicons?domain=tampermonkey.net
 // @grant        none
