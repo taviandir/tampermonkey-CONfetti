@@ -155,7 +155,7 @@ function onChangeFilterType(event) {
         var show = true;
         var keywordsToSearchFor;
         if (filter === 'COM') {
-            keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Resources looted'];
+            keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Resources looted', 'Civilian Casualties'];
         }
         else if (filter === 'TER') {
             keywordsToSearchFor = ['Province Entered', 'Territory Lost', 'Territory Conquered'];
@@ -170,7 +170,7 @@ function onChangeFilterType(event) {
             keywordsToSearchFor = ['built in', 'mobilized'];
         }
         else if (filter === 'DIP') {
-            keywordsToSearchFor = ['New Article Published', 'Message Received', 'Diplomatic Status Changed'];
+            keywordsToSearchFor = ['New Article Published', 'Message Received', 'Diplomatic Status Changed', 'the coalition'];
         }
 
         if (keywordsToSearchFor && keywordsToSearchFor.length) {
