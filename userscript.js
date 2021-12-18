@@ -22,10 +22,11 @@
         mutations.forEach(function(mutation) {
             if (mutation.type === "attributes") {
                 if (!__loaded) {
+                    log("INIT SCRIPT");
                     initExtensionPlay();
                     __loaded = true;
+                    log("INIT SCRIPT - DONE");
                 }
-                console.log("LOADED? attributes changed")
             }
         });
     });
@@ -67,6 +68,32 @@ function initExtensionPlay() {
 
 function initEventWindow() {
     connectEventWindow();
+    hideGoldMarketing();
+    hideTutorialAdvisor();
+}
+
+function hideTutorialAdvisor() {
+    var element = document.getElementById('tutorialAdviceTextContainer');
+    if (element) {
+        element.remove();
+    }
+}
+
+function hideGoldMarketing() {
+    var element = document.getElementById('marketingPopupContainer');
+
+    // TODO : test when presented with gold
+    // var observer = new MutationObserver(function(mutations) {
+    //     mutations.forEach(function(mutation) {
+    //         if (mutation.type === "attributes") {
+    //             // TODO : if 'style="display: block; [...]' click div-button, then hide bottom left element
+    //             console.log('gold popup mutations', mutation);
+    //         }
+    //     });
+    // });
+    // observer.observe(element, {
+    //     attributes: true //configure it to listen to attribute changes
+    // });
 }
 
 var unreadEvents = 0;
