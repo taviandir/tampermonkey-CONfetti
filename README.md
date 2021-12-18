@@ -26,6 +26,6 @@ I made this script to fix the issues that frustrated me and added functionality 
 - Events: Filter by country
 - Events: Agent missions clarification
 - Events: Freetext search
-- Research: List unit type (and not just "BTR-90 has been researched". What is BTR-90?! Instead, show "BTR-90 (Amphibious Combat Vehicle) has been researched")
+- Events - Research: List unit type (and not just "BTR-90 has been researched". What is BTR-90?! Instead, show "BTR-90 (Amphibious Combat Vehicle) has been researched")
 - Hide gold ads
 - Show city morale details right away (if possible)
