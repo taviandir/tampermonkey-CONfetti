@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONtract
 // @namespace    https://www.conflictnations.com/
-// @version      0.1
+// @version      0.2
 // @description  Improve the CON UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -63,13 +63,68 @@
 var __loaded = false;
 function initExtensionPlay() {
     initEventWindow();
-}
-
-
-function initEventWindow() {
-    connectEventWindow();
     hideGoldMarketing();
     hideTutorialAdvisor();
+    initExtensionMenuRow();
+}
+
+function initExtensionMenuRow() {
+    var refElement = document.getElementById('menuContainer');
+    var menuWrapper = document.createElement('div');
+    menuWrapper.id = 'ExtMenu';
+    menuWrapper.style = 'position: absolute; bottom: -80px; left: 0; width: 315px; z-index: 10; color: white;';
+    var ulEl = document.createElement('ul');
+    ulEl.classList.add('mainmenu');
+    menuWrapper.appendChild(ulEl);
+    var liEl = document.createElement('li');
+    liEl.classList.add('con_button');
+    liEl.style = 'display: inline-flex; align-items: center; justify-content: center; font-weight: bold;';
+    liEl.innerText = 'NOTES';
+    $(liEl).on('click', onClickMenuItemNotes);
+    ulEl.appendChild(liEl);
+    insertAfter(menuWrapper, refElement);
+}
+
+function onClickMenuItemNotes() {
+    log('NOTES MENU ITEM CLICKED');
+    var popupEl = document.createElement('div');
+    popupEl.id = 'ExtNotesPopup';
+    popupEl.style = 'min-width: 500px; background: #eee; color: black; border: 1px solid #ccc; position: absolute; left: 2%; top: 25%; display: flex; flex-direction: column;';
+    var headerEl = document.createElement('h1');
+    headerEl.innerText = 'Notes';
+    popupEl.appendChild(headerEl);
+
+    var gameId = getGameId();
+    var textEl = document.createElement('textarea');
+    textEl.id = 'ExtNoteInput';
+    textEl.value = loadGameNote(gameId);
+    textEl.setAttribute('rows', 10);
+    popupEl.appendChild(textEl);
+    var saveEl = document.createElement('button');
+    saveEl.id = 'ExtNoteSave';
+    saveEl.innerText = 'Save';
+    saveEl.style = 'background: white; color: black; margin-top: 1rem;';
+    $(saveEl).on('click', onClickSaveNote);
+    popupEl.appendChild(saveEl);
+
+    document.getElementById('s1914').appendChild(popupEl);
+}
+
+function onClickSaveNote() {
+    log('save click');
+    var textValue = document.getElementById('ExtNoteInput').value;
+    log(textValue);
+    saveGameNote(getGameId(), textValue);
+    log('NOTE SAVED');
+    document.getElementById('ExtNotesPopup').remove();
+}
+
+function loadGameNote(gameId) {
+    return localStorage.getItem('ext_note_' + gameId);
+}
+
+function saveGameNote(gameId, text) {
+    localStorage.setItem('ext_note_' + gameId, text);
 }
 
 function hideTutorialAdvisor() {
@@ -97,7 +152,7 @@ function hideGoldMarketing() {
 }
 
 var unreadEvents = 0;
-function connectEventWindow() {
+function initEventWindow() {
     var eventButton = document.getElementById("func_btn_events");
 
     // extract the "Unread Events" value from the red circle
@@ -216,6 +271,15 @@ function onChangeFilterType(event) {
 
 
 /************************ MISC METHODS *******************************/
+
+function getGameId() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('gameID');
+}
+
+function insertAfter(newNode, referenceNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+}
 
 function addOptionToParent(displayName, value, parentElem) {
     let node = document.createElement('option');
