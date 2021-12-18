@@ -2,8 +2,8 @@
 // @name         CONtract
 // @namespace    https://www.conflictnations.com/
 // @version      0.1
-// @description  Improve the CON UI experience.
-// @author       Taviandir
+// @description  Improve the CON experience.
+// @author       You
 // @match        https://www.conflictnations.com/*
 // @icon         https://www.google.com/s2/favicons?domain=tampermonkey.net
 // @grant        none
@@ -16,33 +16,50 @@
 
     log("INIT");
 
-    document.body.style.position = "relative";
-    var node = document.createElement('div');
-    node.id = "hello-world";
-    node.style.background = "red";
-    node.style.color = "white";
-    node.style.position = "absolute";
-    node.style.top = "10px";
-    node.style.left = "330px";
-    node.style["font-weight"] = "bold";
-    node.style.padding = "1rem";
-    node.style.cursor = "pointer";
-    node.innerText = "LOAD";
-    node.addEventListener("click", () => {
-        log("LOADING");
-        initExtensionPlay();
-        node.style.display = "none";
+    // Determine when it's loaded by observing changes to splash screen attributes. When it is finished loading, style="display: none;" is added to this element.
+    var splashScreen = document.getElementById('splashScreenContainer');
+    var observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === "attributes") {
+                if (!__loaded) {
+                    initExtensionPlay();
+                    __loaded = true;
+                }
+                console.log("LOADED? attributes changed")
+            }
+        });
+    });
+    observer.observe(splashScreen, {
+        attributes: true //configure it to listen to attribute changes
     });
 
-    document.body.appendChild(node);
-    //log("div added!");
+//     document.body.style.position = "relative";
+//     var node = document.createElement('div');
+//     node.id = "hello-world";
+//     node.style.background = "red";
+//     node.style.color = "white";
+//     node.style.position = "absolute";
+//     node.style.top = "10px";
+//     node.style.left = "330px";
+//     node.style["font-weight"] = "bold";
+//     node.style.padding = "1rem";
+//     node.style.cursor = "pointer";
+//     node.innerText = "LOAD";
+//     node.addEventListener("click", () => {
+//         log("LOADING");
+//         initExtensionPlay();
+//         node.style.display = "none";
+//     });
 
-    window.addEventListener('message', (event) => {
-        console.log("[CONtract] IFRAME MESSAGE", event);
-    });
+//     document.body.appendChild(node);
+//     //log("div added!");
+
+//     window.addEventListener('message', (event) => {
+//         console.log("[CONtract] IFRAME MESSAGE", event);
+//     });
 })();
 
-
+var __loaded = false;
 function initExtensionPlay() {
     initEventWindow();
 }
