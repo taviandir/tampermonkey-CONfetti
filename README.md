@@ -17,8 +17,8 @@ I made this script to fix the issues that frustrated me and added functionality 
 - Revamped Events window
   - Highlight unread events
   - Filter by type
-- Take notes (per game, saved in Local Storage)
-- Hide tutorial advisor in top-right
+- Take notes (per game, saved in the browser)
+- Hide tutorial advisor in the top-right
 - 
 
 # Upcoming features
