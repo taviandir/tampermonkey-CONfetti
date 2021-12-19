@@ -66,6 +66,42 @@ function initExtensionPlay() {
     hideGoldMarketing();
     hideTutorialAdvisor();
     initExtensionMenuRow();
+    initDiplomacyWindow();
+}
+
+function initDiplomacyWindow() {
+    var dipBtn = document.getElementById('func_btn_diplomacy');
+    $(dipBtn).on('click', onOpenDiplomacyWindow);
+}
+
+
+function onOpenDiplomacyWindow() {
+    log('on diplomacy open');
+    setTimeout(() => {
+        // delay setting to give it time to load the UI
+
+        var messageTabEl = document.getElementById('func_tab_messages');
+        $(messageTabEl).on('click', onClickDiplomacyMessagesTab);
+    }, 2000);
+}
+
+var __enabledCtrlEnterSend;
+function onClickDiplomacyMessagesTab() {
+    // enable CTRL-Enter to send messages
+    if (!__enabledCtrlEnterSend) {
+        setTimeout(() => {
+            var textAreaEl = document.getElementById('func_create_message_body');
+            if (textAreaEl) {
+                $(textAreaEl).keydown(function (e) {
+                    if (e.ctrlKey && (e.keyCode == 10 || e.keyCode == 13)) {
+                        // Ctrl-Enter pressed
+                        $('#func_send_message').click();
+                    }
+                });
+                __enabledCtrlEnterSend = true;
+            }
+        }, 2000);
+    }
 }
 
 function initExtensionMenuRow() {
@@ -106,7 +142,6 @@ function onClickMenuItemNotes() {
     saveEl.style = 'background: white; color: black; margin-top: 1rem;';
     $(saveEl).on('click', onClickSaveNote);
     popupEl.appendChild(saveEl);
-
     document.getElementById('s1914').appendChild(popupEl);
 }
 
