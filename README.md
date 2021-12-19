@@ -19,7 +19,7 @@ I made this script to fix the issues that frustrated me and added functionality 
   - Filter by type
 - Take notes (per game, saved in the browser)
 - Hide tutorial advisor in the top-right
-- 
+- Messages: Ctrl+Enter to send message
 
 # Upcoming features
 
