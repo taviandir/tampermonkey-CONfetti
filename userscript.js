@@ -6,6 +6,7 @@
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
 // @icon         https://www.google.com/s2/favicons?domain=tampermonkey.net
+// @license      MIT
 // @grant        none
 // ==/UserScript==
 
