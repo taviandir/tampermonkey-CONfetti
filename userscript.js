@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         CONtract
+// @name         CONfetti
 // @namespace    https://www.conflictnations.com/
 // @version      0.2
 // @description  Improve the CON UI experience.
@@ -56,7 +56,7 @@
 //     //log("div added!");
 
 //     window.addEventListener('message', (event) => {
-//         console.log("[CONtract] IFRAME MESSAGE", event);
+//         console.log("[CONfetti] IFRAME MESSAGE", event);
 //     });
 })();
 
@@ -230,7 +230,7 @@ function markUnreadEvents() {
 function addEventFilterSelect(elem) {
     log("addEventFilterSelect()");
     let wrapper = document.createElement('div');
-    wrapper.id = "contract-event-wrapper";
+    wrapper.id = "confetti-event-wrapper";
     wrapper.style.padding = "1rem";
 
     // add a label for type select
@@ -325,10 +325,10 @@ function addOptionToParent(displayName, value, parentElem) {
 
 function log(msg) {
     if (typeof(msg) === 'string') {
-        console.log("[CONtract] " + msg);
+        console.log("[CONfetti] " + msg);
     }
     else {
-        console.log("[CONtract] ", msg);
+        console.log("[CONfetti] ", msg);
     }
 }
 
