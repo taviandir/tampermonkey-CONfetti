@@ -1,4 +1,4 @@
-# CONtract - Make CON great again!
+# CONfetti - Make CON great again!
 
 This is a tampermonkey script that enhances the UI experience in Conflict Of Nations.
 
@@ -9,7 +9,7 @@ This script in no ways alters data, does not intercept data sent to or from the 
 
 # Why
 
-I made this script to fix the issues that frustrated me and added functionality I thought was lacking and should already exist.
+I made this script to fix the issues that frustrates me and to add functionality I think is lacking and should already exist.
 
 
 # Features
