@@ -2,7 +2,7 @@
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
 // @version      0.2
-// @description  Improve the CON UI experience.
+// @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
 // @icon         https://www.google.com/s2/favicons?domain=tampermonkey.net
