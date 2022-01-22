@@ -21,6 +21,10 @@ I made this script to fix the issues that frustrates me and to add functionality
 - Hide tutorial advisor in the top-right
 - Messages: Ctrl+Enter to send message
 
+# Known issues
+
+- CTRL-Enter to send messages only works sometimes
+
 # Upcoming features
 
 - Events: Filter by country
