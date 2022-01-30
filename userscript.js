@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.2
+// @version      0.3
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -206,6 +206,7 @@ function initEventWindow() {
     eventButton.addEventListener("click", (event) => {
         initOptionsInEventWindow();
         markUnreadEvents();
+        addUnitTypeToResearchEvents();
     });
 }
 
@@ -227,6 +228,78 @@ function markUnreadEvents() {
         liElem.style.borderLeft = "4px solid yellow";
     }
 }
+
+function addUnitTypeToResearchEvents() {
+    setTimeout(() => {
+        console.log('addUnitTypeToResearchEvents()');
+        var eventElems = $('#eventsContainer .content .overview ul li');
+        for (var i = 0; i < eventElems.length; i++) {
+            var evEl = eventElems[i];
+            var desc = $(evEl).find('.event-description');
+            var content = "";
+            if (desc.length === 1) {
+                content = desc[0].innerText;
+            }
+            else {
+                continue;
+            }
+
+            if (content.includes('Research Completed')) {
+                // parse out research name from event text
+                let prefix = 'Research for ';
+                let suffix = ' has been completed';
+                let idxStart = content.lastIndexOf(prefix) + prefix.length;
+                let idxEnd = content.lastIndexOf(suffix);
+                let researchName = content.substring(idxStart, idxEnd);
+                let researchNameWithoutParanthesis = researchName.substring(0, researchName.indexOf(' ('));
+                // find match
+                let unitTypeMatch = tryMatchUnitType(researchNameWithoutParanthesis);
+                // let unitTypeMatch = tryMatchUnitType('Benjamin Franklin Class');
+                if (unitTypeMatch) {
+                    // set the new innerText on the content div
+                    var newContent = content.substring(0, idxStart) + researchName + ' [' + unitTypeMatch + ']' + content.substring(idxEnd);
+                    console.log('Research event:', { content, idxStart, idxEnd, researchName, researchNameWithoutParanthesis, newContent });
+                    desc[0].innerText = newContent;
+                }
+            }
+        }
+    }, 1000);
+}
+
+function tryMatchUnitType(researchName) {
+    let data = parseUnitDoctrineData();
+    for (let key in data) {
+        if (data.hasOwnProperty(key)) {
+            if (data[key].some(str => str == researchName)) {
+                // console.log("MATCH FOUND!", { type: key, needle: researchName });
+                return key;
+            }
+        }
+    }
+    return null;
+}
+
+// format: { [key: string]: string[] }
+// where key = unit type, and array = unit type names in the doctrines
+// e.g. { 'Attack Submarine': ['Los Angeles Class', ...]
+var _parsedUnitDoctrineData = null;
+function parseUnitDoctrineData() {
+    if (_parsedUnitDoctrineData) {
+        return _parsedUnitDoctrineData;
+    }
+    let rowSplit = _unitDoctrineData.split('\n');
+    var result = {};
+    for (let i = 0; i < rowSplit.length; i++) {
+        let rawRow = rowSplit[i];
+        let cols = rawRow.split('\t');
+        let values = cols.filter(x => !!x && x.length);
+        let unitType = values.shift();
+        result[unitType] = values;
+    }
+    _parsedUnitDoctrineData = result;
+    return _parsedUnitDoctrineData;
+}
+
 
 function addEventFilterSelect(elem) {
     log("addEventFilterSelect()");
@@ -340,5 +413,51 @@ function inIframe () {
         return true;
     }
 }
+
+/************************ STATIC DATA *******************************/
+
+const _unitDoctrineData = `Motorized Infantry									Basic Infantry	Advanced Infantry	Modern Infantry
+Mechanized Infantry									Basic Mechanized	Advanced Mechanized	Modern Mechanized
+Naval Infantry									Basic Marines	Advanced Marines	Modern Marines
+Airborne Infantry									Basic Airborne	Advanced Airborne	Modern Airborne
+Special Forces	Basic Rangers	Advanced Rangers	Modern Rangers		Basic SAS	Advanced SAS	Modern SAS		Basic Spetsnaz	Advanced Spetsnaz	Modern Spetsnaz
+National Guard									Basic National Guard	Advanced National Guard	Modern National Guard
+Combat Recon Vehicle	M113 Recon	M1117 RSTA	LAV-25		Fox FV721	VEC-M1	Griffon VBMR		BRDM-1	BRDM-2	BRDM-3
+Armored Fighting Vehicle	M551 Sheridan	M2 Bradley	M3 Bradley		Scorpion	FV Warrior	Puma		BMP-2	BMP-3 Dragon	T-15
+Amphibious Combat Vehicle	LVTP-7	AAVP-7A1	ACV 1.1		Fuchs	Piranha	VCBI II		BTR-80	BTR-90	Bumerang
+Main Battle Tank	M1A1 Abrams	M1A2 Abrams	M1A3 Abrams		Leopard 2	Challenger 2	Leopard 2A7+		T-80	T-90	T-14 Armata
+Tank Destroyer	M56 Scorpion	M901 ITV	M1134 Stryker ATGM		Kanonenjagdpanzer	AMX-10 RC	Centauro		2S25 Sprut-SD	BMPT Terminator	BMPT-72 Terminator 2
+Towed Artillery	M198 Howitzer	M119 Howitzer	M777 Howitzer		FH70	TRF1	155 GH 52 APU		D-30 Howitzer	2A36 Giatsint-B	2A Msta-B
+Mobile Artillery	M110 Howitzer	M109 Howitzer	M1203 NLOS		GCT 155mm	AS-90 Braveheart	Panzerhaubitzer 2000		2S3 Akatsiya	2S19 Msta-S	2S35 Koalitsiya-SV
+Multiple Rocket Launcher	M270 MLRS	M270A1 MLRS	M142 HIMARS		Teruel	M270 B1	LRSVM Morava		BM-21 Grad	BM-30 Smerch	9A52-4 Tornado
+Mobile Anti-Air Vehicle	M163 VADS	M247 Sergeant York	LAV-AD Air Defense		Gepard	Otomatic	Marksman		AZU-57-2	ZSU-23-4 Shilka	2K22 Tunguska
+Mobile SAM Launcher	MIM-23 Hawk	MIM-72 Chaparral	AN/TWQ-1 Avenger		Ozelot	Crotale	Stormer HVM		9K35 Strela-10	BUK M1	Pantsir-S1
+Theater Defense System	MIM-14 Nike	MIM-104 Patriot	THAAD Missile Defence		Bloodhound	MEADS	SAMP/T		S-125 Neva	S-300	S-400 Triumf
+Mobile Radar	LCM RADAR	ELEC EQ-36	PATRIOT AN/MPQ-53		UNIMOG SCB	MARS-L	Ground Master 400		1L121-E	KASTA	Nebo-M
+Helicopter Gunship	Kiowa	UH-1Y Venom	Armed Black Hawk		Gazelle	Super Puma	NH-90		Mi-8 TVK	Mi-24 Hind	Mi-35M
+Attack Helicopter	AH-1G Cobra	AH-1Z Viper	AH-64D Apache Longbow		A129 Mangusta	AW Apache AH64D	Tiger		Ka-50 Black Shark	Ka-52 Alligator	Mi-28 Havoc
+ASW Helicopter	SH-3 Sea King	SH-2 Super Seasprite	MH-60R Seahawk		AB 212ASW	Panther	AW159 Wildcat		Ka-25	Mi-14 Haze	Ka-27 Helix
+Air Superiority Fighter	F-5 Tiger	F-16A Fighting Falcon	F-16V Viper		J 35A Draken	Mirage F1	Typhoon		MiG-23 Flogger	MiG-29 Fulcrum	MiG-35 Super Fulcrum
+Naval Air Superiority Fighter	F-4 Phantom II	F-14A Tomcat	F-14D Super Tomcat		Étendard IVM	Jaguar M	Rafale M		Yak-141	Su-33 Flanker D	MiG-29K
+Stealth Air Superiority Fighter	F-22 Raptor				MBB Firefly				Su-47 Berkut
+Strike Fighter	F-111 Aardvark	F-15 Strike Eagle	F-15 Silent Eagle		Mirage Delta 2000	Tornado	JAS 39 Gripen		Su-24 Fencer	Su-27 Flanker	Su-35 Super Flanker
+Naval Strike Fighter	A-6 Intruder	A-7 Corsair II	F-18 Super Hornet		Harrier	Super Étendard	Harrier II Plus		Yak-38	Su-27K	Su-35K
+Stealth Strike Fighter	F-35 Lightning II				F-117 Nighthawk				Su-T50 PakFa
+UAV	MQ1-Predator	RQ-9 Global Hawk	X-47B		Super Heron	MQ9-Reaper	NEUROn		ZOND II	United 40 B5	MIG SKAT
+Naval Patrol Aircraft	P-3 Orion	CP-140 Aurora	P-8 Poseidon		Nimrod	CN-235 CASA	C295 Persuader		Tu-142 Bear	Il-38 Dolphin	A-40 Albatros
+AWACS	EC-121 Warning Star	E-3 Sentry	E-8 Joint STARS		EC-121 Warning Star	E-3 Sentry	E-8 Joint STARS		Tu-126	A-50 Mainstay	A-100
+Naval AWACS	E-2 Hawkeye				Bombardier Globaleye				Tu-126XXXXX
+Heavy Bomber	B-47 Stratojet	B-52 Stratofortress	B-1 Lancer		Valiant	Victor	Vulcan		Tu-95 Bear	Tu-22M Backfire	Tu-160 White Swan
+Stealth Bomber	B-2 Spirit				SR71 Blackbird				Tu-PakDa
+Corvette	Hamilton Class	Cyclone Class	Freedom Class LCS		Descubierta Class	Göteborg Class	Braunschweig Class		Albatross Class	Steregushchiy Class	Gremyashchiy Class
+Frigate	Garcia Class	Knox Class	Perry Class		Duke Class	Bremen Class	Horizon Class		Krivak Class	Neutrashimy Class	Admiral Gorshkov Class
+Destroyer	Farragut Class	Spruance Class	Arleigh Burke Class		Hamburg Class	Gloucester Class	Daring Class		Kashin Class	Sovremennyy Class	Lider Class
+Cruiser	California Class	Virginia Class	Ticonderoga Class		Tiger Class	Vittorio Veneto Class	Absalon Class		Kresta II Class	Kara Class	Slava Class
+Aircraft Carrier	Kitty Hawk Class	Nimitz Class	Gerald R. Ford Class		Giuseppe Garibaldi Class	Charles de Gaulle Class	Queen Elizabeth Class		Kiev Class	Kuznetsov Class	Ulyanovsk Class
+Attack Submarine	Los Angeles Class	Seawolf Class	Virginia Class		Swiftsure Class	Rubis Class	Astute Class		Viktor Class	Akula Class	Yasen Class
+Ballistic Missile Submarine	Benjamin Franklin Class	Ohio Class	Columbia Class		Resolution Class	Vanguard Class	Triomphant Class		Delta Class	Typhoon Class	Borey Class
+ICBM	Minuteman III	GBSD			M51.1	M51.2			RT-2PM Topol	RS-26 Rubezh
+Ballistic Missile	Pershing I	Pershing II	Pershing III		PGM-17 Thor	SSBS S3	J-600T		Scud	SS-20 Saber	9K720 Iskander
+Cruise Missile	Gryphon	Tomahawk	LRSO		RBS-15	KEPD 350	Storm Shadow		P-500 Bazalt	Kh-55	3M-54 Klub`;
 
 
