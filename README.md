@@ -19,7 +19,8 @@ I made this script to fix the issues that frustrates me and to add functionality
   - Filter by type
 - Take notes (per game, saved in the browser)
 - Hide tutorial advisor in the top-right
-- Messages: Ctrl+Enter to send message
+- Messages: CTRL-Enter to send message
+- Events: "Research Completed" specifies unit type (when possible)
 
 # Known issues
 
@@ -30,6 +31,5 @@ I made this script to fix the issues that frustrates me and to add functionality
 - Events: Filter by country
 - Events: Agent missions clarification
 - Events: Freetext search
-- Events - Research: List unit type (and not just "BTR-90 has been researched". What is BTR-90?! Instead, show "BTR-90 (Amphibious Combat Vehicle) has been researched")
 - Hide gold ads
 - Show city morale details right away (if possible)
