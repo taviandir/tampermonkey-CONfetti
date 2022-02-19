@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.3
+// @version      0.4
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -207,6 +207,7 @@ function initEventWindow() {
         initOptionsInEventWindow();
         markUnreadEvents();
         addUnitTypeToResearchEvents();
+        enhanceAgentEvents();
     });
 }
 
@@ -219,13 +220,36 @@ function initOptionsInEventWindow() {
 }
 
 function markUnreadEvents() {
-    log("mark Unread Events");
+    log("Mark Unread Events");
     let childrenOfUl = $('#eventsContainer .content .overview ul').children();
     //console.log("children of ul", childrenOfUl, unreadEvents);
     for (var i = 0; i < unreadEvents; i++) {
         var liElem = childrenOfUl[i];
         //console.log("li elem", liElem);
         liElem.style.borderLeft = "4px solid yellow";
+    }
+}
+
+function enhanceAgentEvents() {
+    log("Enhance Agent Events");
+    let childrenOfUl = $('#eventsContainer .content .overview ul').children();
+    for (var i = 0; i < childrenOfUl.length; i++) {
+        var evEl = childrenOfUl[i];
+        var desc = $(evEl).find('.event-description')[0];
+        if (desc.innerText.indexOf('Our agent') >= 0) {
+            var headerEl = $(evEl).find('.event-time')[0];
+            if (desc.innerText.indexOf('has been captured') >= 0) {
+                // mission failed
+                headerEl.innerText = "👎 " + headerEl.innerText;
+                headerEl.style = "color: yellow;";
+            }
+            else if (desc.innerText.indexOf('sabotaged buildings') >= 0 || desc.innerText.indexOf('destroyed resources') >= 0) {
+                // mission successful
+                headerEl.innerText = "👍 " + headerEl.innerText;
+                headerEl.style = "color: #0f0;";
+            }
+            // TODO : agent missions done upon us
+        }
     }
 }
 
