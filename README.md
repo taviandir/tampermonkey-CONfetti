@@ -27,7 +27,7 @@ I made this script to fix the issues that frustrates me and to add functionality
 
 - CTRL-Enter to send messages only works sometimes
 
-# Upcoming features
+# Upcoming features / wishlist
 
 - Events: Filter by country
 - Events: Agent missions clarification
