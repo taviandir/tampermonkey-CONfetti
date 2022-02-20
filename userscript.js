@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.4
+// @version      0.5
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -233,10 +233,14 @@ function markUnreadEvents() {
 function enhanceAgentEvents() {
     log("Enhance Agent Events");
     let childrenOfUl = $('#eventsContainer .content .overview ul').children();
+    //console.log("children of ul", childrenOfUl, unreadEvents);
+    // console.log("AGENT childrenoful", childrenOfUl);
     for (var i = 0; i < childrenOfUl.length; i++) {
         var evEl = childrenOfUl[i];
         var desc = $(evEl).find('.event-description')[0];
+        // console.log("event innertext", evEl, desc, desc.innerText);
         if (desc.innerText.indexOf('Our agent') >= 0) {
+            // console.log("ENHANCE - our agent event", desc.innerText);
             var headerEl = $(evEl).find('.event-time')[0];
             if (desc.innerText.indexOf('has been captured') >= 0) {
                 // mission failed
@@ -248,7 +252,7 @@ function enhanceAgentEvents() {
                 headerEl.innerText = "👍 " + headerEl.innerText;
                 headerEl.style = "color: #0f0;";
             }
-            // TODO : agent missions done upon us
+            // TODO : agent missions done on us
         }
     }
 }
@@ -281,13 +285,62 @@ function addUnitTypeToResearchEvents() {
                 // let unitTypeMatch = tryMatchUnitType('Benjamin Franklin Class');
                 if (unitTypeMatch) {
                     // set the new innerText on the content div
-                    var newContent = content.substring(0, idxStart) + researchName + ' [' + unitTypeMatch + ']' + content.substring(idxEnd);
-                    console.log('Research event:', { content, idxStart, idxEnd, researchName, researchNameWithoutParanthesis, newContent });
-                    desc[0].innerText = newContent;
+                    //var newContent = content.substring(0, idxStart) + researchName + ' [' + unitTypeMatch + ']' + content.substring(idxEnd);
+                    setNewResearchContent(content, idxStart, idxEnd, researchName, unitTypeMatch, desc[0]);
+                } else {
+                    // perhaps a soft upgrade, try to match for it instead
+                    var softUpgrades = parseSoftUnitUpgradesData();
+                    var lvl = extractResearchUpgradeLevel(researchName);
+                    console.log('research softs', { researchName, researchNameWithoutParanthesis, lvl });
+                    if (lvl > 1) {
+                        var unitTypes = tryMatchSoftUpgrade(researchNameWithoutParanthesis, lvl);
+                        console.log("soft upgr result", { unitTypes });
+                        // if more than 3 hits, then dont write anything (too common upgrade, e.g. "Engine Upgrade (Lvl 2)"
+                        if (unitTypes.length && unitTypes.length <= 3) {
+                            var softMatchStr = unitTypes.join(' / ');
+                            setNewResearchContent(content, idxStart, idxEnd, researchName, softMatchStr, desc[0]);
+                        }
+                    }
                 }
             }
         }
     }, 1000);
+}
+
+function setNewResearchContent(content, idxStart, idxEnd, researchName, matchName, el) {
+    var style = 'text-decoration: underline';
+    var newContent = content.substring(0, idxStart) + researchName + ' <span style="' + style + '">[ ' + matchName + ' ]</span>' + content.substring(idxEnd);
+    console.log("NEW RESEARCH CONTENT", newContent);
+    el.innerHTML = newContent;
+}
+
+function extractResearchUpgradeLevel(researchName) {
+    var x = /(\d\))$/.exec('Fuel Optimization Measures (lvl 5)')[0].replace(')', '');
+    if (!isNaN(x)) {
+        return parseInt(x);
+    }
+    else {
+        return null;
+    }
+}
+
+function tryMatchSoftUpgrade(researchName, lvl) {
+    let data = parseSoftUnitUpgradesData();
+    var idx = lvl - 1;
+    var matches = [];
+    for (let key in data) {
+        if (data.hasOwnProperty(key)) {
+            try {
+                if (data[key][idx] === researchName) {
+                    matches.push(key);
+                }
+            }
+            catch (error) {
+            }
+        }
+    }
+
+    return matches;
 }
 
 function tryMatchUnitType(researchName) {
@@ -322,6 +375,25 @@ function parseUnitDoctrineData() {
     }
     _parsedUnitDoctrineData = result;
     return _parsedUnitDoctrineData;
+}
+
+var _parsedSoftUpgradesData = null;
+function parseSoftUnitUpgradesData() {
+    if (_parsedSoftUpgradesData) {
+        return _parsedSoftUpgradesData;
+    }
+    let rowSplit = _unitSoftUpgradesData.split('\n');
+    var result = {};
+    for (let i = 0; i < rowSplit.length; i++) {
+        let rawRow = rowSplit[i];
+        let cols = rawRow.split('\t');
+        // let values = cols.filter(x => !!x && x.length);
+        let values = cols;
+        let unitType = values.shift();
+        result[unitType] = values;
+    }
+    _parsedSoftUpgradesData = result;
+    return _parsedSoftUpgradesData;
 }
 
 
@@ -484,4 +556,47 @@ ICBM	Minuteman III	GBSD			M51.1	M51.2			RT-2PM Topol	RS-26 Rubezh
 Ballistic Missile	Pershing I	Pershing II	Pershing III		PGM-17 Thor	SSBS S3	J-600T		Scud	SS-20 Saber	9K720 Iskander
 Cruise Missile	Gryphon	Tomahawk	LRSO		RBS-15	KEPD 350	Storm Shadow		P-500 Bazalt	Kh-55	3M-54 Klub`;
 
+const _unitSoftUpgradesData = `Motorized Infantry		Engine Upgrade I	Man Portable Air Defense		Engine Upgrade II		Personal Armor
+Mechanized Infantry		Engine Upgrade		NBC Protection	Reinforced Armor
+Naval Infantry		Engine Upgrade	Portable Air Defense		NBC Protection
+Airborne Infantry		Jungle Warfare Training	Rapid Deployment Training		Woodland Warfare Training	Advanced Ballistic Armor
+Special Forces		Portable Air Defense		Amphibious Warfare Training
+National Guard		Personal Armor	Rapid Deployment Training I		Rapid Deployment Training II		Streamlined Mobilization
+Combat Recon Vehicle		Engine Upgrade	Air Assault		NBC Protection		Reinforced Armor
+Armored Fighting Vehicle		Ground-to-Air Armament Upgrade	Reinforced Armor		NBC Protection		Urban Survival Kit
+Amphibious Combat Vehicle
+Main Battle Tank		Reinforced Armor	Engine Upgrade		NBC Protection		Urban Survival Kit
+Tank Destroyer		Anti Personnel Ammunition	Engine Upgrade		Air Assault		Reinforced Armor
+Towed Artillery		Rocket Assisted Projectiles		Air Assault	Enhanced Optical Sights		Extended Barrel Upgrade
+Mobile Artillery		Rocket Assisted Projectiles	Reinforced Armor		NBC Protection
+Multiple Rocket Launcher		Improved Rocket Range	Engine Upgrade
+Mobile Anti-Air Vehicle		Reinforced Armor	Engine Upgrade		Air Assault		Ground-to-Air Armament Upgrade
+Mobile SAM Launcher		Improved Missile Range	Engine Upgrade		Air Assault
+Theater Defense System		Improved Missile Range	Survivability Kit		Stealth Locating System
+Mobile Radar		Advanced Sensors Array	Engine Upgrade		Stealth Locating System
+Helicopter Gunship		Bulletproofing	Engine Upgrade		AT Missile Pods		Fuel Optimization Measures
+Attack Helicopter		Bulletproofing		Fuel Optimization Measures	Engine Upgrade		Streamlined Mobilization
+ASW Helicopter		Fuel Optimization Measures	Advanced Sensors Array		Anti-Surface Warfare Kit
+Air Superiority Fighter		Reinforced Airframe	Engine Replacement		Fuel Optimization Measures		Streamlined Mobilization
+Naval Air Superiority Fighter
+Stealth Air Superiority Fighter
+Strike Fighter		Reinforced Airframe	Air-to-Air Armament Upgrade		Fuel Optimization Measures		Streamlined Mobilization
+Naval Strike Fighter
+Stealth Strike Fighter
+UAV		Fuel Optimization Measures		Engine Replacement	Reinforced Airframe
+Naval Patrol Aircraft		Advanced Sensor Array		Cruise Missile Hardpoints
+AWACS		Reinforced Airframe	Advanced Sensor Array		Stealth Locating System
+Naval AWACS
+Heavy Bomber		Reinforced Airframe	Fuel Optimization Measures		Increased Missile Hardpoints		Bunker Busting Ordnance
+Stealth Bomber
+Corvette		Survivability Refit	Streamlined Mobilization		Engine Overhaul		Air Defense Upgrade
+Frigate		AA Envelope Expansion	Point-Defense Upgrade		Engine Overhaul	Stealth Locating System
+Destroyer		Engine Overhaul	Air Defense Upgrade		Survivability Refit
+Cruiser		Survivability Refit		Expanded Missile Magazine
+Aircraft Carrier		Air Defense Upgrade		Point-Defense Upgrade
+Attack Submarine		Survivability Refit	Nuclear Reactor Refit		Expanded Missile Magazine
+Ballistic Missile Submarine		Nuclear Reactor Refit	Cruise Missile Launch System		Improved Reloading System	Expanded Missile Magazine
+ICBM		Fuel Improvement	Warhead Shielding
+Ballistic Missile		Fuel Improvement	Booster Upgrade		Warhead Shielding
+Cruise Missile		Booster Upgrade	Fuel Improvement		Warhead Shielding		`;
 
