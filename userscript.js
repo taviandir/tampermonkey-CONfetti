@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.5
+// @version      0.6
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -126,9 +126,10 @@ function onClickMenuItemNotes() {
     log('NOTES MENU ITEM CLICKED');
     var popupEl = document.createElement('div');
     popupEl.id = 'ExtNotesPopup';
-    popupEl.style = 'min-width: 500px; background: #eee; color: black; border: 1px solid #ccc; position: absolute; left: 2%; top: 25%; display: flex; flex-direction: column;';
+    popupEl.style = 'min-width: 500px; background: #eee; color: black; border: 1px solid #ccc; position: absolute; left: 2%; top: 25%; display: flex; flex-direction: column; padding: 0.25rem;';
     var headerEl = document.createElement('h1');
     headerEl.innerText = 'Notes';
+    headerEl.style = 'margin-bottom: 0.5rem';
     popupEl.appendChild(headerEl);
 
     var gameId = getGameId();
@@ -137,13 +138,34 @@ function onClickMenuItemNotes() {
     textEl.value = loadGameNote(gameId);
     textEl.setAttribute('rows', 10);
     popupEl.appendChild(textEl);
+
+    // button div
+    var buttonDiv = document.createElement('div');
+    buttonDiv.style = 'display: flex; margin-top: 0.5rem; justify-content: flex-end';
+    popupEl.appendChild(buttonDiv);
+
+    // cancel button
+    var cancelEl = document.createElement('button');
+    cancelEl.id = 'ExtNoteCancel';
+    cancelEl.innerText = 'Cancel';
+    cancelEl.className = 'con_button large_button uppercase';
+    cancelEl.style = 'margin-right: 0.5rem;';
+    $(cancelEl).on('click', onClickCancelNote);
+    buttonDiv.appendChild(cancelEl);
+
+    // save button
     var saveEl = document.createElement('button');
     saveEl.id = 'ExtNoteSave';
     saveEl.innerText = 'Save';
-    saveEl.style = 'background: white; color: black; margin-top: 1rem;';
+    saveEl.className = 'con_button large_button uppercase';
     $(saveEl).on('click', onClickSaveNote);
-    popupEl.appendChild(saveEl);
+    buttonDiv.appendChild(saveEl);
+
     document.getElementById('s1914').appendChild(popupEl);
+}
+
+function onClickCancelNote() {
+    closeNoteWindow();
 }
 
 function onClickSaveNote() {
@@ -152,6 +174,10 @@ function onClickSaveNote() {
     log(textValue);
     saveGameNote(getGameId(), textValue);
     log('NOTE SAVED');
+    closeNoteWindow();
+}
+
+function closeNoteWindow() {
     document.getElementById('ExtNotesPopup').remove();
 }
 
