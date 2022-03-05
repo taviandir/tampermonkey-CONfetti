@@ -17,7 +17,8 @@ I made this script to fix the issues that frustrates me and to add functionality
 - Revamped Events window
   - Highlight unread events
   - Filter by type
-  - "Research Completed" specifies unit type (when possible)
+  - Filter by country
+  - "Research Completed" specifies unit type (when not ambiguous)
   - Clearer Agent missions outcomes (partially done)
 - Take notes (per game, saved in the browser)
 - Hide tutorial advisor in the top-right
