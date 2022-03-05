@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.7
+// @version      0.7.1
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -438,7 +438,7 @@ function onChangeFilters() {
     console.log('onChangeFilters()');
     var typeFilterValue = getEventFilterTypeValue();
     var countryFilterValue = getEventFilterCountryValue();
-    console.log("FILTER VALUES", { typeFilterValue, countryFilterValue });
+    // console.log("FILTER VALUES", { typeFilterValue, countryFilterValue });
 
     var eventElems = $('#eventsContainer .content .overview ul li');
 
@@ -446,7 +446,7 @@ function onChangeFilters() {
         var evEl = eventElems[i];
         var typeOk = evalFilterType(evEl, typeFilterValue);
         var countryOk = evalFilterCountry(evEl, countryFilterValue);
-        console.log("EV FILTER RESULT", { evEl, typeOk, countryOk });
+        // console.log("EV FILTER RESULT", { evEl, typeOk, countryOk });
 
         var show = typeOk && countryOk;
         if (show) {
@@ -543,7 +543,7 @@ function evalFilterCountry(evEl, filter) {
 function addCountryFilterSelect(elem) {
     log("addCountryFilterSelect()");
     var countries = detectCountriesInEvents();
-    console.log("COUNTRIES", countries);
+    // console.log("COUNTRIES", countries);
 
     let wrapper = document.createElement('div');
     wrapper.id = "confetti-event-wrapper-country";
