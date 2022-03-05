@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.7.1
+// @version      0.7.2
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -213,7 +213,7 @@ function hideGoldMarketing() {
     // });
 }
 
-var unreadEvents = 0;
+var _unreadEvents = 0;
 function initEventWindow() {
     var eventButton = document.getElementById("func_btn_events");
 
@@ -224,9 +224,9 @@ function initEventWindow() {
         if (unreadEventsElem.innerText !== '') {
             var unreadValue = parseInt(unreadEventsElem.innerText);
             if (+unreadValue) {
-                unreadEvents = +unreadValue;
+                _unreadEvents = +unreadValue;
             }
-            console.log("unread as number", unreadValue, unreadEvents);
+            console.log("unread as number", unreadValue, _unreadEvents);
         }
     }
     eventButton.addEventListener("click", (event) => {
@@ -253,12 +253,12 @@ function initOptionsInEventWindow() {
 }
 
 function markUnreadEvents() {
-    log("Mark Unread Events");
+    console.log("Mark Unread Events", _unreadEvents);
     let childrenOfUl = $('#eventsContainer .content .overview ul').children();
     //console.log("children of ul", childrenOfUl, unreadEvents);
-    for (var i = 0; i < unreadEvents; i++) {
+    for (var i = 0; i < _unreadEvents; i++) {
         var liElem = childrenOfUl[i];
-        //console.log("li elem", liElem);
+        // console.log("SET UNREAD: li elem", liElem);
         liElem.style.borderLeft = "4px solid yellow";
     }
 }
