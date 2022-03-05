@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.6.1
+// @version      0.7
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -241,7 +241,14 @@ function initOptionsInEventWindow() {
     log("init event window!");
     var eventContentElem = $('#eventsContainer .content .overview')[0];
     if (eventContentElem) {
-        addEventFilterSelect(eventContentElem);
+        // create a parent wrapper object for all filters
+        let wrapper = document.createElement('div');
+        wrapper.id = "confetti-event-filters";
+        wrapper.style = 'display: flex; padding: 1rem;';
+        eventContentElem.prepend(wrapper);
+
+        addTypeFilterSelect(wrapper);
+        addCountryFilterSelect(wrapper);
     }
 }
 
@@ -320,10 +327,10 @@ function addUnitTypeToResearchEvents() {
                     // perhaps a soft upgrade, try to match for it instead
                     var softUpgrades = parseSoftUnitUpgradesData();
                     var lvl = extractResearchUpgradeLevel(researchName);
-                    console.log('research softs', { researchName, researchNameWithoutParanthesis, lvl });
+                    // console.log('research softs', { researchName, researchNameWithoutParanthesis, lvl });
                     if (lvl > 1) {
                         var unitTypes = tryMatchSoftUpgrade(researchNameWithoutParanthesis, lvl);
-                        console.log("soft upgr result", { unitTypes });
+                        // console.log("soft upgr result", { unitTypes });
                         // if more than 3 hits, then dont write anything (too common upgrade, e.g. "Engine Upgrade (Lvl 2)"
                         if (unitTypes.length && unitTypes.length <= 3) {
                             var softMatchStr = unitTypes.join(' / ');
@@ -339,7 +346,7 @@ function addUnitTypeToResearchEvents() {
 function setNewResearchContent(content, idxStart, idxEnd, researchName, matchName, el) {
     var style = 'text-decoration: underline';
     var newContent = content.substring(0, idxStart) + researchName + ' <span style="' + style + '">[ ' + matchName + ' ]</span>' + content.substring(idxEnd);
-    console.log("NEW RESEARCH CONTENT", newContent);
+    // console.log("NEW RESEARCH CONTENT", newContent);
     el.innerHTML = newContent;
 }
 
@@ -426,11 +433,36 @@ function parseSoftUnitUpgradesData() {
 }
 
 
-function addEventFilterSelect(elem) {
-    log("addEventFilterSelect()");
+/****************************** EVENT FILTERS ******************************/
+function onChangeFilters() {
+    console.log('onChangeFilters()');
+    var typeFilterValue = getEventFilterTypeValue();
+    var countryFilterValue = getEventFilterCountryValue();
+    console.log("FILTER VALUES", { typeFilterValue, countryFilterValue });
+
+    var eventElems = $('#eventsContainer .content .overview ul li');
+
+    for (var i = 0; i < eventElems.length; i++) {
+        var evEl = eventElems[i];
+        var typeOk = evalFilterType(evEl, typeFilterValue);
+        var countryOk = evalFilterCountry(evEl, countryFilterValue);
+        console.log("EV FILTER RESULT", { evEl, typeOk, countryOk });
+
+        var show = typeOk && countryOk;
+        if (show) {
+            evEl.removeAttribute('hidden');
+        }
+        else {
+            evEl.setAttribute('hidden', '');
+        }
+    }
+}
+
+function addTypeFilterSelect(elem) {
+    log("addTypeFilterSelect()");
     let wrapper = document.createElement('div');
-    wrapper.id = "confetti-event-wrapper";
-    wrapper.style.padding = "1rem";
+    wrapper.id = "confetti-event-wrapper-type";
+    wrapper.style.marginRight = '1rem';
 
     // add a label for type select
     let filterLabel = document.createElement('span');
@@ -439,6 +471,7 @@ function addEventFilterSelect(elem) {
 
     // add type select w/ options
     let filterSelect = document.createElement('select');
+    filterSelect.id = _eventFilterTypeId;
     wrapper.appendChild(filterSelect);
     filterSelect.style.padding = "0.5rem";
     addOptionToParent('All', 'ALL', filterSelect);
@@ -448,60 +481,130 @@ function addEventFilterSelect(elem) {
     addOptionToParent('Research', 'RES', filterSelect);
     addOptionToParent('City Production', 'CIT', filterSelect);
     addOptionToParent('Diplomacy', 'DIP', filterSelect);
-    filterSelect.addEventListener('change', onChangeFilterType);
-    elem.prepend(wrapper);
+    filterSelect.addEventListener('change', onChangeFilters);
+    elem.append(wrapper);
 }
 
-function onChangeFilterType(event) {
-    console.log("filter change!", event);
+var _eventFilterTypeId = 'confetti-filter-type-select';
+function getEventFilterTypeValue() {
+    return $("#" + _eventFilterTypeId)[0].value;
+}
+
+var _eventFilterCountryId = 'confetti-filter-country-select';
+function getEventFilterCountryValue() {
+    return $("#" + _eventFilterCountryId)[0].value;
+}
+
+function evalFilterType(evEl, filter) {
+    if (!filter || filter == '' || filter == 'ALL') return true;
+    var desc = $(evEl).find('.event-description');
+    var content = '';
+    if (desc.length === 1) {
+        content = desc[0].innerText;
+    }
+    else {
+        return true;
+    }
+
+    var show = true;
+    var keywordsToSearchFor;
+    if (filter === 'COM') {
+        keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Resources looted', 'Civilian Casualties'];
+    }
+    else if (filter === 'TER') {
+        keywordsToSearchFor = ['Province Entered', 'Territory Lost', 'Territory Conquered'];
+    }
+    else if (filter === 'AGE') {
+        keywordsToSearchFor = ['Agent'];
+    }
+    else if (filter === 'RES') {
+        keywordsToSearchFor = ['Research Completed'];
+    }
+    else if (filter === 'CIT') {
+        keywordsToSearchFor = ['built in', 'mobilized'];
+    }
+    else if (filter === 'DIP') {
+        keywordsToSearchFor = ['New Article Published', 'Message Received', 'Diplomatic Status Changed', 'the coalition'];
+    }
+
+    if (keywordsToSearchFor && keywordsToSearchFor.length) {
+        show = keywordsToSearchFor.map(x => content.includes(x)).some(match => match === true);
+    }
+
+    return show;
+}
+
+function evalFilterCountry(evEl, filter) {
+    if (!filter || filter == '') return true;
+    var attr = evEl.getAttribute('data-country');
+    return attr === filter;
+}
+
+function addCountryFilterSelect(elem) {
+    log("addCountryFilterSelect()");
+    var countries = detectCountriesInEvents();
+    console.log("COUNTRIES", countries);
+
+    let wrapper = document.createElement('div');
+    wrapper.id = "confetti-event-wrapper-country";
+    wrapper.style.marginRight = '1rem';
+
+    // add a label for type select
+    let filterLabel = document.createElement('span');
+    filterLabel.innerText = "Country: ";
+    wrapper.appendChild(filterLabel);
+
+    // add type select w/ options
+    let filterSelect = document.createElement('select');
+    filterSelect.id = _eventFilterCountryId;
+    wrapper.appendChild(filterSelect);
+    filterSelect.style.padding = "0.5rem";
+
+    // add options
+    addOptionToParent('All', '', filterSelect);
+    for (var i = 0; i < countries.length; i++) {
+        var c = countries[i];
+        addOptionToParent(c.value, c.key, filterSelect);
+    }
+
+    filterSelect.addEventListener('change', onChangeFilters);
+    elem.append(wrapper);
+}
+
+function detectCountriesInEvents() {
+    // NOTE : THIS METHOD BOTH DETECTS COUNTRIES AND SETS [data-country] ATTR ON EVENT
     var eventElems = $('#eventsContainer .content .overview ul li');
     var filter = event.target.value;
 
+    var countriesLower = [];
     for (var i = 0; i < eventElems.length; i++) {
         var evEl = eventElems[i];
-        var desc = $(evEl).find('.event-description');
-        var content = "";
-        if (desc.length === 1) {
-            content = desc[0].innerText;
-        }
-        else {
-            continue;
-        }
+        var finds = $(evEl).find('.small_flag_container img');
+        if (finds.length === 0) continue;
+        var el = finds[0];
+        var imgSrc = el.getAttribute('src');
+        var countryName = imgSrc.split('small_')[1].split('.png')[0];
 
-        var show = true;
-        var keywordsToSearchFor;
-        if (filter === 'COM') {
-            keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Resources looted', 'Civilian Casualties'];
-        }
-        else if (filter === 'TER') {
-            keywordsToSearchFor = ['Province Entered', 'Territory Lost', 'Territory Conquered'];
-        }
-        else if (filter === 'AGE') {
-            keywordsToSearchFor = ['Agent'];
-        }
-        else if (filter === 'RES') {
-            keywordsToSearchFor = ['Research Completed'];
-        }
-        else if (filter === 'CIT') {
-            keywordsToSearchFor = ['built in', 'mobilized'];
-        }
-        else if (filter === 'DIP') {
-            keywordsToSearchFor = ['New Article Published', 'Message Received', 'Diplomatic Status Changed', 'the coalition'];
-        }
+        // set data-country attr on event elem
+        evEl.setAttribute('data-country', countryName);
 
-        if (keywordsToSearchFor && keywordsToSearchFor.length) {
-            show = keywordsToSearchFor.map(x => content.includes(x)).some(match => match === true);
-        }
-
-        // eval result
-        if (show) {
-            evEl.removeAttribute('hidden');
-        }
-        else {
-            evEl.setAttribute('hidden', '');
+        // add to list of possible countries, if not there already
+        if (countriesLower.indexOf(countryName) === -1) {
+            countriesLower.push(countryName);
         }
     }
+
+    var result = countriesLower.map(s => {
+        if (_flagCountryNameDict[s]) {
+            return { key: s, value: _flagCountryNameDict[s] };
+        }
+        else {
+            return { key: s, value: toUpperCaseFirst(s) };
+        }
+    });
+    return result;
 }
+
 
 
 /************************ MISC METHODS *******************************/
@@ -539,7 +642,15 @@ function inIframe () {
     }
 }
 
+function toUpperCaseFirst(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
 /************************ STATIC DATA *******************************/
+
+const _flagCountryNameDict = {
+    'thechosen': 'The Chosen'
+};
 
 const _unitDoctrineData = `Motorized Infantry									Basic Infantry	Advanced Infantry	Modern Infantry
 Mechanized Infantry									Basic Mechanized	Advanced Mechanized	Modern Mechanized
