@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.6
+// @version      0.6.1
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -268,7 +268,10 @@ function enhanceAgentEvents() {
         if (desc.innerText.indexOf('Our agent') >= 0) {
             // console.log("ENHANCE - our agent event", desc.innerText);
             var headerEl = $(evEl).find('.event-time')[0];
-            if (desc.innerText.indexOf('has been captured') >= 0) {
+            if (desc.innerText.indexOf('have intercepted') >= 0) {
+                // this is one of the "done to us"
+            }
+            else if (desc.innerText.indexOf('has been captured') >= 0) {
                 // mission failed
                 headerEl.innerText = "👎 " + headerEl.innerText;
                 headerEl.style = "color: yellow;";
