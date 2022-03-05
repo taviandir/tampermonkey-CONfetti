@@ -344,7 +344,7 @@ function setNewResearchContent(content, idxStart, idxEnd, researchName, matchNam
 }
 
 function extractResearchUpgradeLevel(researchName) {
-    var x = /(\d\))$/.exec('Fuel Optimization Measures (lvl 5)')[0].replace(')', '');
+    var x = /(\d\))$/.exec(researchName)[0].replace(')', '');
     if (!isNaN(x)) {
         return parseInt(x);
     }
