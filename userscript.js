@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         CONfetti
+// @name         CONfetti DEV
 // @namespace    https://www.conflictnations.com/
-// @version      0.7.2
+// @version      0.7.3
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -34,31 +34,6 @@
     observer.observe(splashScreen, {
         attributes: true //configure it to listen to attribute changes
     });
-
-//     document.body.style.position = "relative";
-//     var node = document.createElement('div');
-//     node.id = "hello-world";
-//     node.style.background = "red";
-//     node.style.color = "white";
-//     node.style.position = "absolute";
-//     node.style.top = "10px";
-//     node.style.left = "330px";
-//     node.style["font-weight"] = "bold";
-//     node.style.padding = "1rem";
-//     node.style.cursor = "pointer";
-//     node.innerText = "LOAD";
-//     node.addEventListener("click", () => {
-//         log("LOADING");
-//         initExtensionPlay();
-//         node.style.display = "none";
-//     });
-
-//     document.body.appendChild(node);
-//     //log("div added!");
-
-//     window.addEventListener('message', (event) => {
-//         console.log("[CONfetti] IFRAME MESSAGE", event);
-//     });
 })();
 
 var __loaded = false;
@@ -602,6 +577,10 @@ function detectCountriesInEvents() {
             return { key: s, value: toUpperCaseFirst(s) };
         }
     });
+
+    // finally, sort
+    console.log('>>>>>> countries result', { result });
+    result.sort((a, b) => a.value < b.value ? -1 : 1);
     return result;
 }
 
@@ -649,7 +628,8 @@ function toUpperCaseFirst(str) {
 /************************ STATIC DATA *******************************/
 
 const _flagCountryNameDict = {
-    'thechosen': 'The Chosen'
+    'thechosen': 'The Chosen',
+    'roguestate': 'Rogue State',
 };
 
 const _unitDoctrineData = `Motorized Infantry									Basic Infantry	Advanced Infantry	Modern Infantry
