@@ -30,7 +30,6 @@ I made this script to fix the issues that frustrates me and to add functionality
 
 # Upcoming features / wishlist
 
-- Events: Filter by country
 - Events: Agent missions clarification
 - Events: Freetext search
 - Hide gold ads
