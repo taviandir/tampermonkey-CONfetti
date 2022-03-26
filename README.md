@@ -24,6 +24,7 @@ I made this script to fix the issues that frustrates me and to add functionality
 - Window showing Units by Building Level
 - Hide tutorial advisor in the top-right
 - Messages: CTRL-Enter to send message
+- Suppress gold popup on load
 
 # Known issues
 
@@ -33,5 +34,4 @@ I made this script to fix the issues that frustrates me and to add functionality
 
 - Events: Agent missions clarification
 - Events: Freetext search
-- Hide gold ads
 - Show city morale details right away (if possible)
