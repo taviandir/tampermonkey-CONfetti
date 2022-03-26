@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         CONfetti
+// @name         CONfetti DEV
 // @namespace    https://www.conflictnations.com/
-// @version      0.8.0
+// @version      0.9.0
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -313,18 +313,11 @@ function hideTutorialAdvisor() {
 function hideGoldMarketing() {
     var element = document.getElementById('marketingPopupContainer');
 
-    // TODO : test when presented with gold
-    // var observer = new MutationObserver(function(mutations) {
-    //     mutations.forEach(function(mutation) {
-    //         if (mutation.type === "attributes") {
-    //             // TODO : if 'style="display: block; [...]' click div-button, then hide bottom left element
-    //             console.log('gold popup mutations', mutation);
-    //         }
-    //     });
-    // });
-    // observer.observe(element, {
-    //     attributes: true //configure it to listen to attribute changes
-    // });
+    let m = $('#marketingPopupContainer .func_close_button');
+    console.log("GOLD match", m);
+    if (m.length) {
+        m.click();
+    }
 }
 
 var _unreadEvents = 0;
