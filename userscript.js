@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         CONfetti DEV
+// @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.7.3
+// @version      0.8.0
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
@@ -80,23 +80,162 @@ function onClickDiplomacyMessagesTab() {
     }
 }
 
+/**************************************** MENU ROW FEATURES ****************************************/
 function initExtensionMenuRow() {
     var refElement = document.getElementById('menuContainer');
     var menuWrapper = document.createElement('div');
     menuWrapper.id = 'ExtMenu';
-    menuWrapper.style = 'position: absolute; bottom: -80px; left: 0; width: 315px; z-index: 10; color: white;';
+    menuWrapper.style = 'position: absolute; bottom: -80px; left: 0; width: 315px; z-index: 10; color: white; margin-left: 13px;';
     var ulEl = document.createElement('ul');
     ulEl.classList.add('mainmenu');
+    ulEl.style = 'display: grid; grid-template-columns: repeat(5, 1fr)';
     menuWrapper.appendChild(ulEl);
+    insertAfter(menuWrapper, refElement);
+
+    // UNIT B-LVL BUTTON
+    var ubLvlButtonEl = addButtonToMenu(ulEl);
+    ubLvlButtonEl.style.fill = 'white';
+    var svgWrapper = document.createElement('div');
+    svgWrapper.innerHTML = _buildingIconSvg;
+    svgWrapper.style = 'width: 100%; margin: 0.25rem';
+    ubLvlButtonEl.appendChild(svgWrapper);
+    $(ubLvlButtonEl).on('click', onClickMenuUnitBuildingLevel);
+
+    // NOTES BUTTON
+    var notesButtonEl = addButtonToMenu(ulEl);
+    notesButtonEl.innerText = 'NOTES';
+    $(notesButtonEl).on('click', onClickMenuItemNotes);
+}
+
+function addButtonToMenu(menuEl) {
     var liEl = document.createElement('li');
     liEl.classList.add('con_button');
     liEl.style = 'display: inline-flex; align-items: center; justify-content: center; font-weight: bold;';
-    liEl.innerText = 'NOTES';
-    $(liEl).on('click', onClickMenuItemNotes);
-    ulEl.appendChild(liEl);
-    insertAfter(menuWrapper, refElement);
+    menuEl.appendChild(liEl);
+    return liEl;
 }
 
+function createPopupCloseButton() {
+    var div = document.createElement('div');
+    div.innerHTML = `<div class="close_button_s"><div>x</div></div>`;
+    var child = div.firstChild;
+    child.parent = null;
+    div.remove();
+    return child;
+}
+
+/*** UNIT BUILDING LVL MATRIX ***/
+function onClickMenuUnitBuildingLevel() {
+    log('UNIT BUILDING-LEVEL ITEM CLICKED');
+    var popupEl = document.createElement('div');
+    popupEl.id = 'ExtNotesUbLvl';
+    popupEl.style = 'min-width: 500px; background: #51666d; color: white; border: 1px solid #ccc; position: absolute; left: 2%; top: 25%; display: flex; flex-direction: column; padding: 0.25rem;';
+    popupEl.appendChild(initUbPopupStyles());
+    popupEl.appendChild(initUbLvlHeader());
+    var tableWrapper = document.createElement('div');
+    popupEl.appendChild(tableWrapper);
+    tableWrapper.innerHTML = _unitBuildlingLevelTableTemplate;
+
+    // inject data into table
+    var data = parseUnitBuildingLevelsData();
+    var tableEl = tableWrapper.firstChild;
+    for (let key in data) {
+        let obj = data[key];
+        for (let lvl = 1; lvl <= 5; lvl++) {
+            let arr = obj[lvl];
+            if (arr.length) {
+                let tdHtml = ubArrayToHtml(arr);
+                var cellId = getUbTableCellId(key, lvl);
+                var tdMatch = $(tableEl).find('#' + cellId);
+                if (tdMatch.length) {
+                    tdMatch[0].innerHTML = tdHtml;
+                }
+            }
+        }
+    }
+
+    document.getElementById('s1914').appendChild(popupEl);
+}
+
+function initUbPopupStyles() {
+    var styles = document.createElement('style');
+    styles.innerHTML = _unitBuildlingPopupCss;
+    return styles;
+}
+
+function ubArrayToHtml(arr) {
+    let html = '';
+    for (let x of arr) {
+        html += '<div>' + x + '</div>';
+    }
+    return html;
+}
+
+function getUbTableCellId(building, lvl) {
+    let key = '';
+    if (building === 'Army Base') {
+        key = 'army';
+    }
+    else if (building === 'Air Base') {
+        key = 'air';
+    }
+    else if (building === 'Naval Base') {
+        key = 'naval';
+    }
+    return key + "_" + lvl;
+}
+
+function initUbLvlHeader() {
+    var headerWrapper = document.createElement('div');
+    headerWrapper.style = 'display: flex; align-items: space-between';
+    var closeButton = createPopupCloseButton();
+    $(closeButton).on('click', onClickCloseUbLvlWindow);
+    var headerEl = document.createElement('h1');
+    headerEl.innerText = 'Units by Building Levels';
+    headerEl.style = 'margin-bottom: 0.5rem';
+    headerWrapper.appendChild(headerEl);
+    headerWrapper.appendChild(closeButton);
+    return headerWrapper;
+}
+
+function onClickCloseUbLvlWindow() {
+    document.getElementById('ExtNotesUbLvl').remove();
+}
+
+function parseUnitBuildingLevelsData() {
+    var rows = _unitBuildingLevelsData.split('\n');
+    let dict = {};
+    let currentObj = null;
+    for (let row of rows) {
+        let cols = row.split('\t');
+
+        // check for new category
+        if (cols[0] != '') {
+            currentObj = {};
+            initLevelsInBuildingObj(currentObj);
+            var key = cols[0] + ' Base';
+            dict[key] = currentObj;
+        }
+
+        // add units to its level
+        for (let lvl = 1; lvl <= 5; lvl++) {
+            if (!!cols[lvl]) {
+                currentObj[lvl].push(cols[lvl]);
+            }
+        }
+    }
+
+    return dict;
+}
+
+function initLevelsInBuildingObj(obj) {
+    for (let i = 0; i < 5; i++) {
+        obj[i+1] = [];
+    }
+}
+
+
+/*** NOTES ***/
 function onClickMenuItemNotes() {
     log('NOTES MENU ITEM CLICKED');
     var popupEl = document.createElement('div');
@@ -114,7 +253,7 @@ function onClickMenuItemNotes() {
     textEl.setAttribute('rows', 10);
     popupEl.appendChild(textEl);
 
-    // button div
+    // buttons container
     var buttonDiv = document.createElement('div');
     buttonDiv.style = 'display: flex; margin-top: 0.5rem; justify-content: flex-end';
     popupEl.appendChild(buttonDiv);
@@ -144,11 +283,11 @@ function onClickCancelNote() {
 }
 
 function onClickSaveNote() {
-    log('save click');
+    // log('save click');
     var textValue = document.getElementById('ExtNoteInput').value;
     log(textValue);
     saveGameNote(getGameId(), textValue);
-    log('NOTE SAVED');
+    // log('NOTE SAVED');
     closeNoteWindow();
 }
 
@@ -270,7 +409,7 @@ function enhanceAgentEvents() {
 
 function addUnitTypeToResearchEvents() {
     setTimeout(() => {
-        console.log('addUnitTypeToResearchEvents()');
+        // console.log('addUnitTypeToResearchEvents()');
         var eventElems = $('#eventsContainer .content .overview ul li');
         for (var i = 0; i < eventElems.length; i++) {
             var evEl = eventElems[i];
@@ -484,7 +623,7 @@ function evalFilterType(evEl, filter) {
     var show = true;
     var keywordsToSearchFor;
     if (filter === 'COM') {
-        keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Resources looted', 'Civilian Casualties'];
+        keywordsToSearchFor = ['Enemy Defeated', 'Fighting.', 'Friendly Unit Lost', 'Civilian Casualties'];
     }
     else if (filter === 'TER') {
         keywordsToSearchFor = ['Province Entered', 'Territory Lost', 'Territory Conquered'];
@@ -720,3 +859,95 @@ ICBM		Fuel Improvement	Warhead Shielding
 Ballistic Missile		Fuel Improvement	Booster Upgrade		Warhead Shielding
 Cruise Missile		Booster Upgrade	Fuel Improvement		Warhead Shielding		`;
 
+const _unitBuildingLevelsData = `Army	Motorized Infantry	Mechanized Infantry	Special Forces	Multiple Rocket Launcher	Theater Defense System
+	National Guard	Naval Infantry	Mobile Artillery
+	Combat Recon Vehicle	Airmobile Infantry	Mobile SAM Launcher
+	Mobile Anti-Air Vehicle	Armored Fighting Vehicle	Tank Commander
+	Infantry Officer	Amphibious Combat Vehicle
+	Airborne Officer	Main Battle Tank
+		Tank Destroyer
+		Towed Artillery
+		Mobile Radar
+
+Air	Helicopter Gunship	Attack Helicopter	Naval Strike Fighter	AWACS	Stealth Air Superiority Fighter
+	Air Superiority Fighter	ASW Helicopter	Naval Patrol Aircraft	Naval AWACS	Stealth Strike Fighter
+	UAV	Naval Air Superiority Fighter	Heavy Bomber		Stealth Bomber
+	Rotary Wing Officer	Strike Fighter
+
+Naval		Corvette	Destroyer	Cruiser	Aircraft Carrier
+		Frigate	Attack Submarine	Ballistic Missile Submarine
+		Naval Officer	Submarine Commander		`;
+
+const _unitBuildlingPopupCss = `
+thead.ext-ub-head {
+border-bottom: 1px solid #fff;
+}
+td.ext-ub-cell-category {
+border-right: 1px solid #fff;
+}
+#ExtUbTable tbody td {
+padding: 1rem;
+vertical-align: unset;
+}
+`;
+
+const _unitBuildlingLevelTableTemplate = `<table id="ExtUbTable">
+	<thead class="ext-ub-head">
+		<tr>
+			<th>Building</th>
+			<th>Level 1</th>
+			<th>Level 2</th>
+			<th>Level 3</th>
+			<th>Level 4</th>
+			<th>Level 5</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td class="ext-ub-cell-category">Army Base</td>
+			<td id="army_1"></td>
+			<td id="army_2"></td>
+			<td id="army_3"></td>
+			<td id="army_4"></td>
+			<td id="army_5"></td>
+		</tr>
+		<tr>
+			<td class="ext-ub-cell-category">Air Base</td>
+			<td id="air_1"></td>
+			<td id="air_2"></td>
+			<td id="air_3"></td>
+			<td id="air_4"></td>
+			<td id="air_5"></td>
+		</tr>
+		<tr>
+			<td class="ext-ub-cell-category">Naval Base</td>
+			<td id="naval_1"></td>
+			<td id="naval_2"></td>
+			<td id="naval_3"></td>
+			<td id="naval_4"></td>
+			<td id="naval_5"></td>
+		</tr>
+	</tbody>
+</table>`;
+
+// NOTE : temp until code for 'native' icons are in place
+const _buildingIconSvg = `<svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 442 442" style="enable-background:new 0 0 442 442;" xml:space="preserve">
+<g>
+	<path d="M382,0H60c-5.523,0-10,4.477-10,10v422c0,5.523,4.477,10,10,10h322c5.523,0,10-4.477,10-10V10C392,4.477,387.523,0,382,0z
+		 M295,422h-55V279h55V422z M372,422h-57V269c0-5.523-4.477-10-10-10h-75c-5.523,0-10,4.477-10,10v153H70V20h302V422z"/>
+	<path d="M103,128h50c5.523,0,10-4.477,10-10V53c0-5.523-4.477-10-10-10h-50c-5.523,0-10,4.477-10,10v65
+		C93,123.523,97.477,128,103,128z M113,63h30v45h-30V63z"/>
+	<path d="M196,128h50c5.523,0,10-4.477,10-10V53c0-5.523-4.477-10-10-10h-50c-5.523,0-10,4.477-10,10v65
+		C186,123.523,190.477,128,196,128z M206,63h30v45h-30V63z"/>
+	<path d="M289,128h50c5.523,0,10-4.477,10-10V53c0-5.523-4.477-10-10-10h-50c-5.523,0-10,4.477-10,10v65
+		C279,123.523,283.477,128,289,128z M299,63h30v45h-30V63z"/>
+	<path d="M103,236h50c5.523,0,10-4.477,10-10v-65c0-5.523-4.477-10-10-10h-50c-5.523,0-10,4.477-10,10v65
+		C93,231.523,97.477,236,103,236z M113,171h30v45h-30V171z"/>
+	<path d="M196,236h50c5.523,0,10-4.477,10-10v-65c0-5.523-4.477-10-10-10h-50c-5.523,0-10,4.477-10,10v65
+		C186,231.523,190.477,236,196,236z M206,171h30v45h-30V171z"/>
+	<path d="M289,236h50c5.523,0,10-4.477,10-10v-65c0-5.523-4.477-10-10-10h-50c-5.523,0-10,4.477-10,10v65
+		C279,231.523,283.477,236,289,236z M299,171h30v45h-30V171z"/>
+	<path d="M103,344h50c5.523,0,10-4.477,10-10v-65c0-5.523-4.477-10-10-10h-50c-5.523,0-10,4.477-10,10v65
+		C93,339.523,97.477,344,103,344z M113,279h30v45h-30V279z"/>
+</g></svg>`;
