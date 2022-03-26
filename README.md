@@ -21,6 +21,7 @@ I made this script to fix the issues that frustrates me and to add functionality
   - "Research Completed" specifies unit type (when not ambiguous)
   - Clearer Agent missions outcomes (partially done)
 - Take notes (per game, saved in the browser)
+- Window showing Units by Building Level
 - Hide tutorial advisor in the top-right
 - Messages: CTRL-Enter to send message
 
