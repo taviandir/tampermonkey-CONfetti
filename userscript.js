@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         CONfetti
 // @namespace    https://www.conflictnations.com/
-// @version      0.9.0
+// @version      0.9.1
 // @description  Improve the Conflict Of Nations UI experience.
 // @author       Taviandir
 // @match        https://www.conflictnations.com/*
